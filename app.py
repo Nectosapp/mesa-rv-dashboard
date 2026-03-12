@@ -438,12 +438,24 @@ with col_chart:
 
 # ─── Stock List (right) ───
 with col_list:
-    # Sort options
-    sort_col = st.selectbox("Ordenar por", ["Ticker", "Preço", "Var %", "Volume"], index=2, label_visibility="collapsed")
+    # Filter + Sort
+    col_filter, col_sort = st.columns([3, 1])
+    with col_filter:
+        filter_text = st.text_input("🔍 Filtrar ações", placeholder="Ex: PETR, VALE, ITUB...", label_visibility="collapsed")
+    with col_sort:
+        sort_col = st.selectbox("Ordenar por", ["Ticker", "Preço", "Var %", "Volume"], index=2, label_visibility="collapsed")
+
+    # Apply filter
+    if filter_text.strip():
+        filter_terms = [f.strip().upper() for f in filter_text.split(",") if f.strip()]
+        filtered_tickers = [t for t in ticker_list if any(term in t for term in filter_terms)]
+    else:
+        filtered_tickers = ticker_list
+
     sort_map = {"Ticker": "ticker", "Preço": "price", "Var %": "change_pct", "Volume": "volume"}
     reverse = sort_col != "Ticker"
     sorted_tickers = sorted(
-        ticker_list,
+        filtered_tickers,
         key=lambda t: data[t].get(sort_map[sort_col], t) if sort_col != "Ticker" else t,
         reverse=reverse,
     )
